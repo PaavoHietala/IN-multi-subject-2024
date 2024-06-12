@@ -87,8 +87,8 @@ def geo_plot(inputf, title, ylabel, outputf, rows):
     df = pd.melt(df, value_vars = rows)
 
     # Replace inf with nearest even 10 to get them cleanly on the right side
-    df['value'].where(df['value'] <= 70, np.inf, inplace = True)
-    inf_value = 70
+    df['value'].where(df['value'] <= 80, np.inf, inplace = True)
+    inf_value = 80
     df = df.replace(np.inf, inf_value)
 
     # Plot individual stimuli and means on the same image
@@ -100,8 +100,8 @@ def geo_plot(inputf, title, ylabel, outputf, rows):
     sns.stripplot(x = df['value'], y = df['variable'], jitter = 0.25,
                   alpha = 0.5, size = 6)
 
-    dist[dist == np.inf] = np.nan
-    dist[dist >= 100] = np.nan
+    dist[dist == np.inf] = 80
+    dist[dist >= 80] = 80
     medians = np.nanmedian(dist, axis = 1)
     
     sns.stripplot(x = medians, y = rows, jitter = 0., alpha = 1, size = 12,
@@ -112,13 +112,13 @@ def geo_plot(inputf, title, ylabel, outputf, rows):
     plt.xlabel("Geodesic distance (mm)", fontsize = font)
     plt.ylabel(ylabel, fontsize = font)
     start, end = fig.axes[0].get_xlim()
-    ticks = np.arange(0, 71, 10)
+    ticks = np.arange(0, 81, 10)
     fig.axes[0].xaxis.set_ticks(ticks)
 
     plt.title(title)
 
     lbl = [str(tick) for tick in ticks]
-    lbl[-1] = ">70"
+    lbl[-1] = ">80"
     fig.axes[0].set_xticklabels(lbl)
     plt.yticks(fontsize = font)
     plt.tight_layout()
@@ -152,16 +152,21 @@ def latex_stats(inputfs, statf, rows, titles):
     # Load all inputfs to one 3D list
     for f in inputfs:
         dist = np.loadtxt(f, delimiter = ',')
+        
+        # Count outliers
+        dist[dist >= 80] = np.nan
         dist[dist == np.inf] = np.nan
-        dist[dist >= 100] = np.nan
+        inf = np.count_nonzero(np.isnan(dist), axis = 1)
+        infs.append(inf)
+        
+        # Winsorize to 80
+        dist[np.isnan(dist)] = 80
 
         medians = np.nanmedian(dist, axis = 1)
         means = np.nanmean(dist, axis = 1)
         stds = np.nanstd(dist, axis = 1)
-        inf = np.count_nonzero(np.isnan(dist), axis = 1)
 
         stats.append([means, medians, stds])
-        infs.append(inf)
     
     # Fit the stats list to numpy array, one row in numpy = one row in table
     # One row consist of [mean, median, std] * len(inputfs)

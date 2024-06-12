@@ -39,11 +39,13 @@ subject = 'fsaverage'
 
 # Original subject if stc_m is plotted
 
-og_subject = 'MEGCI_S1'
+og_subject = 'MEGCI_S9'
 
 # List of stimuli and bilateral stimuli
 
-stims = ['sector' + str(i) for i in range(1,25)]
+stims = ['sector' + str(i) for i in [7 ,8 ,1 ,2 ,3 ,4 ,5 ,6 ,
+                                     15,16,9 ,10,11,12,13,14,
+                                     23,24,17,18,19,20,21,22]]
 bilaterals = ['sector' + str(i) for i in [3, 7, 11, 15, 19, 23]]
 
 # Suffix used in stcs, usually subject count
@@ -105,6 +107,28 @@ elif method == 'remtw' and stc_type == 'avg':
 else:
     clim = {'kind' : 'value', 'lims' : [0. * abs_max, 0.3 * abs_max, 0.8 * abs_max]}
 
+# Load fMRI target points
+lbl_subject = subject if stc_type == 'stc' else 'fsaverage'
+targets = np.genfromtxt(op.join(project_dir[:-5],
+                                'MFMEG_stimorder_vertices_rh_lh.txt'),
+                        dtype='int')
+targets = [x for x in targets.flatten() if x != -1]
+print(targets)
+
+dense = [mne.surface.read_surface(op.join(subjects_dir, lbl_subject,
+                                          'surf', 'lh.white'),
+                                  return_dict = True),
+         mne.surface.read_surface(op.join(subjects_dir, lbl_subject,
+                                          'surf', 'rh.white'),
+                                  return_dict = True)]
+
+fname_src = utils.get_fname(lbl_subject, 'src', src_spacing = src_spacing)
+src = mne.read_source_spaces(op.join(project_dir, 'src', fname_src),
+                             verbose = False)
+
+# Hemisphereres for the targets as they appear in the stimorder txt file
+target_hemi = [1, 1, 1, 0, 0, 0, 0, 1, 0, 1] * 3
+
 for row_idx in range(0,8):
     for col_idx in range(0,3):
         stim_idx = row_idx + col_idx * 8
@@ -132,12 +156,41 @@ for row_idx in range(0,8):
         
         for label in [label_fpath_lh, label_fpath_rh]:
             v1 = mne.read_label(label, 'fsaverage')
-            brain.add_label(v1, borders = 2, color = 'lime')
+            brain.add_label(v1, borders = 2, color = 'indigo')
+        
+        # Index of the first hemisphere in stimorder txt file to correlate with
+        # arbitrary order of the stims list. The target index is incremented
+        # by 1 for all midline stimuli
+        
+        stim_no = int(stims[stim_idx][6:])
+        
+        t_index = stim_no - 1
+        
+        doubles = [3, 7, 11, 15, 19, 23]
+        
+        for no in doubles:
+            if stim_no > no:
+                t_index += 1
         
         # Add peak foci
         for peak, hemi in zip(peaks, peak_hemis):
+            
+            if len(peaks) == 2:
+                if hemi == peak_hemis[1]:
+                    t_index += 1
+            
             brain.add_foci(peak, coords_as_verts = True, scale_factor = 1,
-                           color = 'lime', hemi = hemi)
+                           color = 'indigo', hemi = hemi)
+            
+            # Add fMRI target foci
+            print(f'Params: {target_hemi[t_index]}, {targets[t_index]}')
+            target = utils.dense_to_sparse_idx(src[target_hemi[t_index]],
+                                               dense[target_hemi[t_index]], 
+                                               targets[t_index])
+            brain.add_foci(target, coords_as_verts = True, scale_factor = .9,
+                           color = 'cyan',
+                           hemi = 'lh' if target_hemi[t_index] == 0 else 'rh')
+            print(f"Added target {target} for {stim_no} on {hemi}")
         
         brain.show_view(elevation = 100, azimuth = -60, distance = 400, col = 0)
         brain.show_view(elevation = 100, azimuth = -120, distance = 400, col = 1)

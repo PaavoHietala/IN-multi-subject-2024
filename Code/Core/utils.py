@@ -210,7 +210,8 @@ def find_peaks(project_dir, src_spacing, stc_method, task, stimuli, bilaterals,
     peaks : list of int
         List of peak valued vertex indices for each stimulus
     peak_hemis : list of str
-        List of hemispheres for each peak index in same order as peaks
+        List of hemispheres for each peak index in same order as peaks.
+        For bilateral stimuli the RH peak comes first.
     '''
 
     peaks = []
@@ -246,9 +247,9 @@ def find_peaks(project_dir, src_spacing, stc_method, task, stimuli, bilaterals,
             print(f'Got peak for stimulus {stim} on lh at index {peak_lh} and',
                   f'on rh at {peak_rh}')
 
-            peaks.append(peak_lh)
             peaks.append(peak_rh)
-            peak_hemis += ['lh', 'rh']
+            peaks.append(peak_lh)
+            peak_hemis += ['rh', 'lh']
         
         stc = None
     
@@ -268,6 +269,8 @@ def dense_to_sparse_idx(sparse, dense, dense_idx):
     dense : dict
         Dense MNE surface from mne.read_surface with return_dict=True.
         The surface can be e.g. FreeSurfer lh.white.
+    dense_idx : int
+        Index of the vertex on the dense mesh
     
     Returns
     -------
@@ -275,10 +278,12 @@ def dense_to_sparse_idx(sparse, dense, dense_idx):
         Index of the sparse vertex corresponding to given vertex on dense surf
     '''
 
-    sparse_idx = mne.surface._compute_nearest(sparse['rr'][:sparse['nuse']],
-                                              np.array([dense[2]['rr'][dense_idx] / 1000]))
+    sparse_idx, dist = mne.surface._compute_nearest(sparse['rr'][:sparse['nuse']],
+                                                    np.array([dense[2]['rr'][dense_idx] / 1000]),
+                                                    return_dists = True)
     
-    print(f"Got sparse index {sparse_idx[0]} for dense index {dense_idx}")
+    print(f"Got sparse index {sparse_idx[0]} for dense index {dense_idx},"
+          + f" dist {round(dist[0]*1000, 2)} mm")
 
     return sparse_idx[0]
 
@@ -287,7 +292,6 @@ def tabulate_geodesics(project_dir, src_spacing, stc_method, task, stimuli,
                        subject = 'fsaverage', mode = 'avg', overwrite = False,
                        time = None):
     '''
-    TODO fix docs (add time)
     Compute geodesic distances between peaks and the V1 label vertices and
     save them in a csv file. Each row is one subject count in <counts> and
     each column is a peak (two peaks for bilateral stimuli).
@@ -362,7 +366,7 @@ def tabulate_geodesics(project_dir, src_spacing, stc_method, task, stimuli,
     target_hemi = [1, 1, 1, 0, 0, 0, 0, 1, 0, 1] * 3
 
     # Comparison list to get inf distance if the peak is on the wrong hemi
-    expected_hemi = [side + 'h' for side in "rrlrllllrr"] * 3
+    expected_hemi = [side + 'h' for side in "rrrllllrlr"] * 3
 
     for n_idx, suffix in enumerate([str(n) + suffix for n in counts]):
         if mode == 'stc_m' and suffix == '1':
@@ -378,7 +382,7 @@ def tabulate_geodesics(project_dir, src_spacing, stc_method, task, stimuli,
         for peak_idx, peak in enumerate(peaks):
             hemi_idx = 0 if peak_hemis[peak_idx] == 'lh' else 1
             if peak_hemis[peak_idx] == expected_hemi[peak_idx]:
-                target = dense_to_sparse_idx(src[hemi_idx],
+                target = dense_to_sparse_idx(src[target_hemi[peak_idx]],
                                              dense[target_hemi[peak_idx]], 
                                              targets[peak_idx])
                 dist = src[hemi_idx]['dist'][peak, target] * 1000

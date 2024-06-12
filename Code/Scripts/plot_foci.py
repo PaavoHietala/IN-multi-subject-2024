@@ -160,7 +160,7 @@ def plot_foci(project_dir, src_spacing, stc_method, task, stimuli, colors,
         label_path = os.path.join(mne.get_config('SUBJECTS_DIR'), plot_subject,
                                   'label', f'{hemi}.V1_exvivo.label')
         v1 = mne.read_label(label_path, plot_subject)
-        brain.add_label(v1, borders = 2)
+        brain.add_label(v1, borders = 2, color = "indigo")
 
         # Prepare hemisphere-specific subset lists of colors, peaks and
         # stimulus & color names for the plot.

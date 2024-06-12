@@ -169,7 +169,7 @@ def plot_result_estimates(subject, stim, method, project_dir, suffix = None,
 
     for peak, hemi in zip(peaks, peak_hemis):
         brain.add_foci(peak, coords_as_verts = True, scale_factor = 1,
-                       color = 'lime', hemi = hemi)
+                       color = 'indigo', hemi = hemi)
     
     # Set colorbar limits and type
     if cbar_type == 'sep' and clim != None:
@@ -191,7 +191,7 @@ def plot_result_estimates(subject, stim, method, project_dir, suffix = None,
         v1 = mne.read_label('/m/nbe/scratch/megci/data/FS_Subjects_MEGCI/'
                             + 'fsaverage/label/' + hemi + '.V1_exvivo.label',
                             'fsaverage')
-        brain.add_label(v1, borders = 2, color = 'lime')
+        brain.add_label(v1, borders = 2, color = 'indigo')
 
     # Rotate the brain, take a snapshot and remove all white rows / columns
     brain.show_view(elevation = 100, azimuth = -60, distance = 400, col = 0)
