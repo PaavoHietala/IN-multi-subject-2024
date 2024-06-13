@@ -1,6 +1,6 @@
-# Improving source estimation of retinotopic MEG responses with joint analysis of multiple subjects.
+# Improving source estimation of retinotopic MEG responses by combining data from multiple subjects.
 
-This repository contains the analysis code for the manuscript "Improving source estimation of retinotopic MEG responses with joint analysis of multiple subjects." by Hietala et al. (2024) submitted to Imaging Neuroscience.
+This repository contains the analysis code for the manuscript "Improving source estimation of retinotopic MEG responses by combining data from multiple subjects." by Hietala et al. (2024) submitted to Imaging Neuroscience.
 
 The analysis pipeline is adapted for a particular multifocal retinotopic mapping dataset which has been preprocessed with MATLAB, but the source estimation functions can be modified for other data with relative ease.
 
