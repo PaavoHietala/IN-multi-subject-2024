@@ -1,6 +1,6 @@
 # Improving source estimation of retinotopic MEG responses by combining data from multiple subjects.
 
-This repository contains the analysis code for the manuscript "Improving source estimation of retinotopic MEG responses by combining data from multiple subjects." by Hietala et al. (2024) submitted to Imaging Neuroscience.
+This repository contains the analysis code for the manuscript "Improving source estimation of retinotopic MEG responses by combining data from multiple subjects." by Hietala et al. (2024) published in Imaging Neuroscience.
 
 The analysis pipeline is adapted for a particular multifocal retinotopic mapping dataset which has been preprocessed with MATLAB, but the source estimation functions can be modified for other data with relative ease.
 
@@ -8,6 +8,9 @@ Currently supported MEG processing pipelines:
 - eLORETA with Euclidean source-space averaging (Inspired by [Larson et al. 2014](https://doi.org/10.3389/fnins.2014.00330))
 - Minimum Wasserstein estimates ([Janati et al. 2020](https://doi.org/10.1016/j.neuroimage.2020.116847))
 - MWE with Euclidean source-space averaging
+
+## Citation
+Paavo Hietala, Ilmari Kurki, Aapo Hyvärinen, Lauri Parkkonen, Linda Henriksson; Improving source estimation of retinotopic MEG responses by combining data from multiple subjects. Imaging Neuroscience 2024; 2 1–15. doi: [https://doi.org/10.1162/imag_a_00265](https://doi.org/10.1162/imag_a_00265)
 
 ## Installation
 
